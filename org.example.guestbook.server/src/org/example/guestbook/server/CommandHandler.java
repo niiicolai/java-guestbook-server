@@ -1,42 +1,33 @@
 package org.example.guestbook.server;
 
-
-import java.net.Socket;
 import java.util.ArrayList;
 
 public class CommandHandler {
 
-	private int clientNumber = 0;
+	private boolean stop = false;
 	private Command nextCommand = Command.NONE; 
 	
-	private static String clientPrefix = "Client NO: ";
-	
-	// # Help
-	private static String helpMessage = "Command list:\n GET => list all messages\n CREATE => create new message ";
-	
-	// # Unknown
-	private static String unknownMessage = "Unknown command. Type 'help' to see a list of commands.";
-	
-	// # GET
-	private static String noMessages = "The message list is empty. You can be the first to add one!";
-	
-	// # CREATE
-	private static String createMessageStp1 = "Creating new message. Enter text:";
-	private static String createMessageStp2 = "Message saved. Type 'get' to see it on the list.";
-	private static String createMessagePrefix = "Message list: ";
+	private static String helpMessage = Messages.getString("CommandHandler.0"); //$NON-NLS-1$
+	private static String unknownMessage = Messages.getString("CommandHandler.1"); //$NON-NLS-1$
+	private static String noMessages = Messages.getString("CommandHandler.2"); //$NON-NLS-1$
+	private static String createMessageStp1 = Messages.getString("CommandHandler.3"); //$NON-NLS-1$
+	private static String createMessageStp2 = Messages.getString("CommandHandler.4"); //$NON-NLS-1$
+	private static String createMessagePrefix = Messages.getString("CommandHandler.5"); //$NON-NLS-1$
+	private static String exitMessage = Messages.getString("CommandHandler.6"); //$NON-NLS-1$
 	
 	private static ArrayList<Message> runtimeMessages = 
 			new ArrayList<Message>();
 	
 	private enum Command {
+		EXIT,
 		GET,
 		CREATE,
 		HELP,
 		NONE
 	}
 	
-	public CommandHandler(int clientNumber) {
-		this.clientNumber = clientNumber;
+	public CommandHandler() {
+		// TODO Auto-generated constructor stub
 	}
 
 	public String Process(String stringCmd) {
@@ -47,10 +38,11 @@ public class CommandHandler {
 			case GET:	 return Get();
 			case HELP:	 return Help();
 			case CREATE: return Create(stringCmd);
+			case EXIT:   return Exit();
 			default: 	 return Unknown();
 		}
 	}
-
+	
 	private String Get() {
 		if (runtimeMessages.size() == 0) return noMessages;
 		
@@ -73,7 +65,7 @@ public class CommandHandler {
 	}
 	
 	private String Create(String stringCmd) {
-		var msg = "";
+		var msg = ""; //$NON-NLS-1$
 		
 		if (nextCommand.equals(Command.NONE)) {
 			// Wait for another create call.
@@ -82,13 +74,18 @@ public class CommandHandler {
 		} else {
 			// Wait for a new command
 			nextCommand = Command.NONE;
-			var text = clientPrefix + clientNumber + " " + stringCmd;
-			var msgObj = new Message(text);
+			var msgObj = new Message(stringCmd);
 			runtimeMessages.add(msgObj);
 			msg = createMessageStp2;
 		}
 
 		return msg;
+	}
+	
+	private String Exit() {
+		stop = true;
+		
+		return exitMessage;
 	}
 	
 	private static String Unknown() {
@@ -106,5 +103,9 @@ public class CommandHandler {
             	command = cmd;
         }
 		return command;
+	}
+
+	public boolean isStopped() {
+		return stop;
 	}
 }

@@ -2,41 +2,25 @@ package org.example.guestbook.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
+	private static int poolSize = 3;
+	private static int port = 6666;
 	
 	public static void main (String[] args) {
-		Server.Start();
-	}
-	
-	private static String startServerMessage = "Starting server...";
-	private static String newConnectionMessage = " - Established connection...";
-	
-	private static int port = 6666;
-	private static void Start() {
+		
+		NetworkService ns = null;
 		
 		try {
-			Logger.Log(startServerMessage);
-			
-			var serverSocket = new ServerSocket(port);
-			var clientNumber = 0;
-
-			while (true) {
-				clientNumber++;
-				var socket = serverSocket.accept();
-				
-				Logger.LogClient(newConnectionMessage, clientNumber);
-				var connection = new Connection(socket, clientNumber);
-				connection.start();
-			}
-			
-			// Unreachable code
-			//serverSocket.close();
-			
+			ns = new NetworkService(port, poolSize);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		new Thread(ns).start();
 	}
 }
 
